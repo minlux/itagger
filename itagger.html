@@ -1,10 +1,23 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Drag and Drop Upload</title>
+  <title>Itagger</title>
 </head>
 <body>
-  <h1>Image Annotater</h1>
+  <h1>Itagger</h1>
+  <p>Mark the fotos to be extracted out of the image by "tagging" them in the image.<br/>
+  Therefore drag your images, one after the other, into the box below.<br/>
+  For each image, you can mark the fotos to be extracted with three clicks:
+  <ol>
+      <li>Click to the top left corner of the image.</li>
+      <li>Click to the top right corner of the image.</li>
+      <li>Click at any point of the bottom edge of the photo.</li>
+      <li>Enter the destination file name of the selected photo into the popup dialog.</li>
+  </ol>
+  Repeat these steps for all photos within an image and for all images. When done, click the
+  download button to get a "annotations.csv" file, that contains the data of your annotation.
+  Call <code>"./extract annotations.csv"</code> to start the batch process to extract the images.
+  </p>
   <button id="download" onclick="getAnnotations()">Download Annotations</button>
   <div id="drop_zone" ondrop="drag_drop(event)" ondragover="return false" 
        style="width: 100%; height: 100%; border-style: solid; text-align: center; overflow: scroll">
