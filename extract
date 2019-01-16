@@ -1,0 +1,13 @@
+#!/bin/bash
+INPUT=$1
+IFS=,
+[ ! -f $INPUT ] && { echo "$INPUT file not found"; exit 99; }
+while read src dst x0 y0 w0 h0 x y w h rot dummy
+do
+    echo $dst
+    convert $src -crop $w0''x''$h0+$x0+$y0 out/$dst #crop "outer image"
+    convert out/$dst -rotate $rot out/$dst #rotate "outer image" to align "inner image"
+    convert out/$dst -gravity center -crop $w''x''$h+0+0 out/$dst #crop "inner image"
+    sleep 0.01
+    exiftran -g -i out/$dst #update thumbnail
+done < $INPUT

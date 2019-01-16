@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Drag and Drop Upload</title>
+</head>
+<body>
+  <h1>Image Annotater</h1>
+  <button id="download" onclick="getAnnotations()">Download Annotations</button>
+  <div id="drop_zone" ondrop="drag_drop(event)" ondragover="return false" 
+       style="width: 100%; height: 100%; border-style: solid; text-align: center; overflow: scroll">
+       <canvas id="canvas">Bild hierher ziehen</canvas>
+  </div>
+  <script>
+    var c = document.getElementById("canvas");
+    var ctx = c.getContext("2d");
+    var image = new Image();
+    var filepath = '';
+    var filename;
+    var extension;
+
+    image.style.display="block";
+    image.onload = function(e) {
+      ctx.canvas.width = image.width;
+      ctx.canvas.height = image.height;
+      c.width = image.width;
+      c.height = image.height;
+      ctx.drawImage(image, 0, 0);
+    };
+
+    function drag_drop(event) {
+      event.preventDefault();
+      filepath = event.dataTransfer.files[0].name;
+      image.src = filepath; //assignment triggers "onload" event
+      let assembly = filepath.split('.');
+      filename = assembly[0];
+      extension = assembly[1];
+    }
+
+    var annotations = [];
+    var index = 1;
+    var pcnt = 0;
+    var punkt = []; //Punkte A, B, C
+    c.onclick = function(e) {
+      //add new point
+      punkt[pcnt++] = {
+        x: e.offsetX,
+        y: e.offsetY
+      };
+
+      //all three points A, B, C set?
+      if (pcnt >= 3)
+      {
+        pcnt = 0;
+        let label = window.prompt('Label', filename + '_' + index + '.' + extension);
+        ++index;
+        if (label)
+        {
+          //calculate vectors and their length
+          let vectAB = {
+            x: punkt[1].x - punkt[0].x,
+            y: punkt[1].y - punkt[0].y
+          };
+          let lenAB = Math.sqrt(vectAB.x * vectAB.x + vectAB.y * vectAB.y); //Breite des Rechtecks
+          let vectAC = {
+            x: punkt[2].x - punkt[0].x,
+            y: punkt[2].y - punkt[0].y
+          };
+
+          //Rotationswinkel
+          let winkel = (-180 * Math.atan2(vectAB.y, vectAB.x)) / Math.PI; //Winkel im Uhrzeigersinn
+
+          //Normalenvektor: Rechtwinklick zu AB (nach rechts), Laenge 1
+          let vectNormal = {
+            x: -vectAB.y / lenAB,
+            y: vectAB.x / lenAB
+          };
+
+          //Lotstrecke AB | C. Dies enstrpricht der Hoehe des Rechtecks
+          let lenLOT = Math.abs(vectAB.x * vectAC.y - vectAB.y * vectAC.x) / lenAB;
+          let vectLOT = {
+            x: Math.round(lenLOT * vectNormal.x),
+            y: Math.round(lenLOT * vectNormal.y)
+          };
+
+          //Setze Punkte C, D
+          punkt[2] = {
+            x: punkt[1].x + vectLOT.x,
+            y: punkt[1].y + vectLOT.y
+          };
+          punkt[3] = {
+            x: punkt[0].x + vectLOT.x,
+            y: punkt[0].y + vectLOT.y
+          };
+
+          //Rechteck einzeichnen
+          ctx.beginPath();
+          ctx.moveTo(punkt[0].x, punkt[0].y);
+          ctx.lineTo(punkt[1].x, punkt[1].y);
+          ctx.lineTo(punkt[2].x, punkt[2].y);
+          ctx.lineTo(punkt[3].x, punkt[3].y);
+          ctx.lineTo(punkt[0].x, punkt[0].y);
+          ctx.stroke();
+          ctx.fillText(label, punkt[0].x, punkt[0].y);
+
+          //begrenzung berechnen
+          let x0 = {
+            x: Math.min(punkt[0].x, punkt[1].x, punkt[2].x, punkt[3].x),
+            y: Math.min(punkt[0].y, punkt[1].y, punkt[2].y, punkt[3].y)
+          };
+          let w0 = Math.abs(Math.max(punkt[0].x, punkt[1].x, punkt[2].x, punkt[3].x) - x0.x);
+          let h0 = Math.abs(Math.max(punkt[0].y, punkt[1].y, punkt[2].y, punkt[3].y) - x0.y);
+
+          let annotation = [filepath, label, //source, destination
+                            x0.x, x0.y, w0, h0, //bounding box: ursprung, width, height
+                            punkt[0].x, punkt[0].y, Math.round(lenAB), Math.round(lenLOT), winkel.toFixed(3), //koordinaten-linke-obere-ecke, width, height, rotate
+                            0]; //terminator(dummy)
+          annotation = annotation.join();
+          //console.log(annotation);
+          annotations.push(annotation);
+
+          //console.log('x0=' + punkt[0].x + ', y0=' + punkt[0].y);
+          //console.log('alpha=' + winkel);
+        }
+      }
+    }
+
+    document.onkeydown = function(e) {
+      if ("key" in e) {
+        if(e.key == "Escape" || e.key == "Esc") {
+          pcnt = 0
+        }
+      }
+    };
+
+
+    function getAnnotations() {
+      let csvContent = "data:text/csv;charset=utf-8,";
+      annotations.forEach(function(row){
+        csvContent += row + "\r\n"; // add carriage return
+      });
+
+//   var encodedUri = encodeURI(csvContent);
+//   window.open(encodedUri, "annotations.csv");
+      let encodedUri = encodeURI(csvContent);
+      let link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "annotations.csv");
+      link.click();
+    }
+  </script>
+
+</body>
+</html>
+
+
+
+
