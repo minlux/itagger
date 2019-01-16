@@ -1,6 +1,6 @@
 # Image Tagger
 "Toolset" to exctract multiple pictures out of one or more "multi-picture-images".
-E.g. extract (crop and rotate) multiple scanned photos fotos via batch.
+E.g. extract (crop and rotate) multiple scanned photos via batch.
 
 ## TODOs and Hints
 TODO - add description.
@@ -18,6 +18,7 @@ Start "tagging" of the photos by clicking each photo:
 - 1st: top-left corner
 - 2nd: top-right corner
 - 3rd: somewhere to the bottom edge of the photo
+
 In the popup dialog, add a name destination name for the image file and click OK.
 Repeate this step for all photos of the image. When done, drag in the next image
 and continue selecting photos.
@@ -35,7 +36,7 @@ Then start the extraction process to get the images into the *out* folder:
 ./extract annotations.csv
 ```
 
-The photos will be extracted into single images:
+## Example Output
 ![Photo1](doc/out/collage_1.jpg)
 ![Photo2](doc/out/collage_2.jpg)
 ![Photo3](doc/out/collage_3.jpg)
